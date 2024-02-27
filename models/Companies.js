@@ -23,6 +23,16 @@ const CompanySchema = new mongoose.Schema({
     tel:{
         type: String
     }
+},{
+    toJSON: {virtuals:true},
+    toObject:{virtuals:true}
 });
 
+//Reverse populate with virtuals
+CompanySchema.virtual('interviews',{
+    ref: 'Interview',
+    localField: '_id',
+    foreignField: 'company',
+    justOne:false
+});
 module.exports=mongoose.model('Company',CompanySchema);
