@@ -117,12 +117,13 @@ exports.updateCompany=async(req,res,next)=>{
 //@access   Public
 exports.deleteCompany=async(req,res,next)=>{
     try{
-        const company = await Company.findByIdAndDelete(req.params.id);
+        const company = await Company.findById(req.params.id);
 
         if(!company){
             return res.status(400).json({success:false});
         }
 
+        await company.deleteOne();
         res.status(200).json({success:true, data:{}});
     }catch(err){
         res.status(400).json({success:false});
