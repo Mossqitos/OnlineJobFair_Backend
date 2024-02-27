@@ -104,3 +104,26 @@ exports.updateInterview=async(req,res,next)=>{
         return res.status(500).json({success:false,message:"Cannot update Interview"});
     }
 };
+
+//@desc     Delete interview
+//@route    DELETE /api/v1/interviews/:id
+//@access   Private
+exports.deleteInterview=async(req,res,next)=>{
+    try{
+        const interview = await Interview.findById(req.params.id); 
+
+        if(!interview){
+            return res.status(404).json({success:false,message:`No interview with the id of ${req.params.id}`});
+        }
+        
+        await interview.deleteOne();
+
+        res.status(200).json({
+            success:true,
+            data: {}
+        });
+    } catch(err){
+        console.log(err.stack);
+        return res.status(500).json({success:false,message:"Cannot delete Interview"});
+    }
+};
