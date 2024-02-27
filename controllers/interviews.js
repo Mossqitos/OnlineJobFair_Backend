@@ -65,7 +65,7 @@ exports.addInterview=async(req,res,next)=>{
         const companies= await Company.findById(req.params.companyId);
 
         if(!companies){
-            return res.status(404).json({success:false,message:`No hospital with the id of ${req.params.companyId}`});
+            return res.status(404).json({success:false,message:`No company with the id of ${req.params.companyId}`});
         }
         const interview = await Interview.create(req.body);
 
@@ -76,5 +76,31 @@ exports.addInterview=async(req,res,next)=>{
     } catch(err){
         console.log(err.stack);
         return res.status(500).json({success:false,message:"Cannot create Interview"});
+    }
+};
+
+//@desc     Update interview
+//@route    PUT /api/v1/interviews/:id
+//@access   Private
+exports.updateInterview=async(req,res,next)=>{
+    try{
+        let interview = await Interview.findById(req.params.id);
+
+        if(!interview){
+            return res.status(404).json({success:false,message:`No interview with the id of ${req.params.id}`});
+        }
+        
+        interview=await Interview.findByIdAndUpdate(req.params.id,req.body,{
+            new:true,
+            runValidators:true
+        });
+
+        res.status(200).json({
+            success:true,
+            data: interview
+        });
+    } catch(err){
+        console.log(err.stack);
+        return res.status(500).json({success:false,message:"Cannot update Interview"});
     }
 };
