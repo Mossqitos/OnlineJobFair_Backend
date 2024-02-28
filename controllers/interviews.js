@@ -62,10 +62,26 @@ exports.addInterview=async(req,res,next)=>{
     try{
         req.body.company=req.params.companyId;
 
-        const companies= await Company.findById(req.params.companyId);
+        const company=await Company.findById(req.params.companyId);
 
-        if(!companies){
-            return res.status(404).json({success:false,message:`No company with the id of ${req.params.companyId}`});
+        if(!company){
+            return res.status(404).json({success:false,message:`No company with the id of ${req.params.companyId}`})
+        }
+        //add user Id to req.body
+        req.body.user=req.user.id;
+
+        //Check for existed company
+        const existedInterviews= await Interview.find({user:req.user.id});
+
+        const intvDate = req.body.intvDate;
+
+        if(intvDate > "2022-05-13" || intvDate < "2022-05-10") {
+            return res.status(400).json({success:false,message:'The Interview Date is not between May 10 - 13 2022'})
+        }
+
+        //If the user is not an admin, they can only create 3 interview.
+        if(existedInterviews.length >= 3 && req.user.role !== 'admin'){
+            return res.status(400).json({success:false,message:`The user with ID ${req.user.id} has already made 3 interviews`});
         }
         const interview = await Interview.create(req.body);
 
@@ -87,7 +103,11 @@ exports.updateInterview=async(req,res,next)=>{
         let interview = await Interview.findById(req.params.id);
 
         if(!interview){
-            return res.status(404).json({success:false,message:`No interview with the id of ${req.params.id}`});
+            return res.status(404).json({success:false, message:`No interview with the id of ${req.params.id}`});
+        }
+
+        if(interview.user.toString()!== req.user.id && req.user.role !== 'admin'){
+            return res.status(401).json({success:false,message:`User ${req.user.id} is not authorized to update this interview`});
         }
         
         interview=await Interview.findByIdAndUpdate(req.params.id,req.body,{
@@ -113,7 +133,11 @@ exports.deleteInterview=async(req,res,next)=>{
         const interview = await Interview.findById(req.params.id); 
 
         if(!interview){
-            return res.status(404).json({success:false,message:`No interview with the id of ${req.params.id}`});
+            return res.status(404).json({success:false, message:`No interview with the id of ${req.params.id}`});
+        }
+
+        if(interview.user.toString()!== req.user.id && req.user.role !== 'admin'){
+            return res.status(401).json({success:false,message:`User ${req.user.id} is not authorized to delete this interview`});
         }
         
         await interview.deleteOne();
