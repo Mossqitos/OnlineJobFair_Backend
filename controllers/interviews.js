@@ -1,5 +1,5 @@
 const Interview = require('../models/Interview');
-const Company = require('../models/Companies')
+const Company = require('../models/Companies');
 
 //@desc     Get all interviews
 //@route    GET /api/v1/interviews
@@ -10,12 +10,18 @@ exports.getInterviews=async(req,res,next)=>{
     if(req.user.role !== 'admin'){
         query=Interview.find({user:req.user.id}).populate({
             path:'company',
-            select:'name province tel'
+            select:'name tel'
+        }).populate({
+            path:'job_position',
+            select:'position'
         });
     }else{ //If you are an admin, you can see all 
         query = Interview.find().populate({
             path:'company',
-            select:'name province tel'
+            select:'name tel'
+        }).populate({
+            path:'job_position',
+            select:'position'
         });
     }
     try{
@@ -27,7 +33,7 @@ exports.getInterviews=async(req,res,next)=>{
         });
     } catch(err){
         console.log(err.stack);
-        return req.status(500).json({success:false,message:"Cannot find Interview"});
+        return res.status(500).json({success:false,message:"Cannot find Interview"});
     }
 };
 
@@ -38,7 +44,10 @@ exports.getInterview=async(req,res,next)=>{
     try{
         const interview= await Interview.findById(req.params.id).populate({
             path: 'company',
-            select: 'name description tel'
+            select: 'name tel'
+        }).populate({
+            path:'job_position',
+            select:'position'
         });
         
         if(!interview){
@@ -69,6 +78,7 @@ exports.addInterview=async(req,res,next)=>{
         }
         //add user Id to req.body
         req.body.user=req.user.id;
+        
 
         //Check for existed company
         const existedInterviews= await Interview.find({user:req.user.id});
@@ -101,6 +111,12 @@ exports.addInterview=async(req,res,next)=>{
 exports.updateInterview=async(req,res,next)=>{
     try{
         let interview = await Interview.findById(req.params.id);
+
+        const intvDate = req.body.intvDate;
+
+        if(intvDate > "2022-05-13" || intvDate < "2022-05-10") {
+            return res.status(400).json({success:false,message:'The Interview Date is not between May 10 - 13 2022'})
+        }
 
         if(!interview){
             return res.status(404).json({success:false, message:`No interview with the id of ${req.params.id}`});

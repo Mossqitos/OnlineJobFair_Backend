@@ -13,7 +13,12 @@ const InterviewSchema=new mongoose.Schema({
     company:{
         type:mongoose.Schema.ObjectId,
         ref:'Company',
-        required:'true'
+        required:true
+    },
+    job_position:{
+        type:mongoose.Schema.ObjectId,
+        ref:'Jobposition',
+        required:true
     },
     createAt: {
         type: Date,

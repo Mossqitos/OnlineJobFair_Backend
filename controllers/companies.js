@@ -20,7 +20,17 @@ exports.getCompanies=async(req,res,next)=>{
         //create operators ($gt, $gte, etc)
         queryStr=queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, match=>`$${match}`);
         //finding resource
-        query=Company.find(JSON.parse(queryStr)).populate('interviews');
+        query=Company.find(JSON.parse(queryStr)).populate({
+            path:'jobpositions',
+            select:'position time'  
+        });
+
+        query=query.populate({
+            path:'interviews',
+            select:'user intvDate'  
+        });
+
+        // query=Company.find(JSON.parse(queryStr));
 
         //Select Fields
         if(req.query.select){
@@ -72,7 +82,10 @@ exports.getCompanies=async(req,res,next)=>{
 //@access   Public
 exports.getCompany=async(req,res,next)=>{
     try{
-        const company = await Company.findById(req.params.id);
+        const company = await Company.findById(req.params.id).populate({
+            path:'jobpositions',
+            select:'position time'  
+        });
 
         if(!company){
             return res.status(400).json({success:false});
@@ -102,8 +115,8 @@ exports.updateCompany=async(req,res,next)=>{
             runValidators:true
         });
 
-        if(!Company){
-            return rawListeners.status(400).json({success:false});
+        if(!company){
+            return res.status(400).json({success:false});
         }
 
         res.status(200).json({success:true, data:company});
