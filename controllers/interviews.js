@@ -1,5 +1,6 @@
 const Interview = require('../models/Interview');
 const Company = require('../models/Companies');
+const Jobposition = require('../models/Jobposition')
 
 //@desc     Get all interviews
 //@route    GET /api/v1/interviews
@@ -70,11 +71,16 @@ exports.getInterview=async(req,res,next)=>{
 exports.addInterview=async(req,res,next)=>{
     try{
         req.body.company=req.params.companyId;
-
+        req.body.job_position=req.params.positionId;
+        
         const company=await Company.findById(req.params.companyId);
+        const jobposition = await Jobposition.findById(req.params.positionId);
 
         if(!company){
             return res.status(404).json({success:false,message:`No company with the id of ${req.params.companyId}`})
+        }
+        if(!jobposition){
+            return res.status(404).json({success:false,message:`No company with the id of ${req.params.positionId}`})
         }
         //add user Id to req.body
         req.body.user=req.user.id;
@@ -95,7 +101,7 @@ exports.addInterview=async(req,res,next)=>{
         }
         const interview = await Interview.create(req.body);
 
-        res.status(200).json({
+        res.status(201).json({
             success:true,
             data:interview
         });
